@@ -7,18 +7,13 @@
 
 cameras:
   - id: cam_01
-    url: rtsp://admin:password@192.168.1.100:554/stream1
-    queue_size: 10
-    reconnect_delay: 5.0
-
-  - id: cam_02
-    url: rtsp://admin:password@192.168.1.101:554/stream1
+    url: "rtsp://192.168.100.225:554/user=admin_password=tlJwpbo6_channel=1_stream=0.sdp?real_stream"
     queue_size: 10
     reconnect_delay: 5.0
 
   # Add more cameras as needed:
-  # - id: cam_03
-  #   url: rtsp://admin:password@192.168.1.102:554/stream1
+  # - id: cam_02
+  #   url: "rtsp://192.168.100.225:554/user=admin_password=tlJwpbo6_channel=2_stream=0.sdp?real_stream"
 
 detector:
   model: models/yolov8n.pt  # yolov8n / yolov8s / yolov8m / yolov8l / yolov8x
