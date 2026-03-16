@@ -2,24 +2,24 @@
 Main application — runs YOLOv8 detection on multiple RTSP streams.
 
 Usage:
-    python src/app.py --config config/cameras.yaml
-    python src/app.py --config config/cameras.yaml --show          # display windows
-    python src/app.py --config config/cameras.yaml --save-frames   # save annotated frames
+    python src/app.py --config config/cameras.yaml             # web viewer at :8080
+    python src/app.py --config config/cameras.yaml --port 9090 # custom port
+    python src/app.py --config config/cameras.yaml --show      # OpenCV desktop windows
+    python src/app.py --config config/cameras.yaml --save-frames
 """
 import argparse
 import cv2
 import logging
 import sys
-import time
 import yaml
 from pathlib import Path
 from datetime import datetime
 
-# Allow running from repo root
 sys.path.insert(0, str(Path(__file__).parent))
 
 from rtsp_stream import MultiStreamManager
 from detector import YOLOv8Detector
+from web_viewer import WebViewer
 
 logging.basicConfig(
     level=logging.INFO,
@@ -37,7 +37,7 @@ def load_config(path: str) -> dict:
         return yaml.safe_load(f)
 
 
-def run(config: dict, show: bool = False, save_frames: bool = False):
+def run(config: dict, show: bool = False, save_frames: bool = False, port: int = 8080):
     # --- Setup streams ---
     manager = MultiStreamManager()
     for cam in config["cameras"]:
@@ -59,10 +59,14 @@ def run(config: dict, show: bool = False, save_frames: bool = False):
         use_tracking=det_cfg.get("tracking", True),
     )
 
+    # --- Setup web viewer ---
+    viewer = WebViewer(camera_ids=manager.camera_ids(), port=port)
+    viewer.start()
+    logger.info(f"Open your browser at  http://0.0.0.0:{port}")
+
     output_dir = Path(config.get("output", {}).get("frames_dir", "output/frames"))
     output_dir.mkdir(parents=True, exist_ok=True)
 
-    # --- Start streams ---
     manager.start_all()
     logger.info(f"Monitoring cameras: {manager.camera_ids()}")
 
@@ -74,8 +78,10 @@ def run(config: dict, show: bool = False, save_frames: bool = False):
                     continue
 
                 result = detector.detect(frame, camera_id=cam_id)
-
                 display = result.annotated_frame if result.annotated_frame is not None else frame
+
+                # Push to web viewer
+                viewer.push_frame(cam_id, display)
 
                 if result.detections:
                     classes_found = {d.class_name for d in result.detections}
@@ -87,13 +93,10 @@ def run(config: dict, show: bool = False, save_frames: bool = False):
                     cv2.imwrite(str(path), display)
 
                 if show:
-                    win_name = f"Camera: {cam_id}"
-                    cv2.imshow(win_name, display)
+                    cv2.imshow(f"Camera: {cam_id}", display)
 
             if show:
-                key = cv2.waitKey(1) & 0xFF
-                if key == ord("q"):
-                    logger.info("Quit key pressed.")
+                if (cv2.waitKey(1) & 0xFF) == ord("q"):
                     break
 
     except KeyboardInterrupt:
@@ -108,12 +111,13 @@ def run(config: dict, show: bool = False, save_frames: bool = False):
 def main():
     parser = argparse.ArgumentParser(description="YOLOv8 + RTSP multi-camera detector")
     parser.add_argument("--config", default="config/cameras.yaml", help="Path to config YAML")
-    parser.add_argument("--show", action="store_true", help="Display annotated frames in windows")
+    parser.add_argument("--port", type=int, default=8080, help="Web viewer port (default 8080)")
+    parser.add_argument("--show", action="store_true", help="Also open OpenCV desktop windows")
     parser.add_argument("--save-frames", action="store_true", help="Save frames that have detections")
     args = parser.parse_args()
 
     config = load_config(args.config)
-    run(config, show=args.show, save_frames=args.save_frames)
+    run(config, show=args.show, save_frames=args.save_frames, port=args.port)
 
 
 if __name__ == "__main__":
