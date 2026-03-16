@@ -21,7 +21,7 @@ cameras:
   #   url: rtsp://admin:password@192.168.1.102:554/stream1
 
 detector:
-  model: yolov8n.pt       # yolov8n / yolov8s / yolov8m / yolov8l / yolov8x
+  model: models/yolov8n.pt  # yolov8n / yolov8s / yolov8m / yolov8l / yolov8x
   confidence: 0.5
   iou: 0.45
   device: cpu             # cpu | cuda | mps
