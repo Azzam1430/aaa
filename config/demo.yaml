@@ -1,0 +1,19 @@
+# Demo configuration — uses a local test video instead of a live RTSP camera.
+# Switch back to cameras.yaml for live camera use.
+
+cameras:
+  - id: cam_01
+    url: "output/videos/test_demo.mp4"
+    queue_size: 10
+    reconnect_delay: 999.0   # no reconnect loop for a file source
+
+detector:
+  model: models/yolov8n.pt
+  confidence: 0.35
+  iou: 0.45
+  device: cpu
+  tracking: true
+  classes:        # null = all COCO classes
+
+output:
+  frames_dir: output/frames
