@@ -1,0 +1,14 @@
+__pycache__/
+*.py[cod]
+*.pth
+*.pt
+*.onnx
+output/
+logs/
+models/
+.env
+*.egg-info/
+dist/
+build/
+.venv/
+venv/

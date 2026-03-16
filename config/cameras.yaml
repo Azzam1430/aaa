@@ -1,0 +1,34 @@
+# Camera configuration
+# Replace the URLs below with your actual RTSP stream addresses.
+# Common formats:
+#   rtsp://user:password@192.168.1.100:554/stream1
+#   rtsp://192.168.1.100:554/live/main
+#   rtsp://admin:admin@10.0.0.50/h264Preview_01_main
+
+cameras:
+  - id: cam_01
+    url: rtsp://admin:password@192.168.1.100:554/stream1
+    queue_size: 10
+    reconnect_delay: 5.0
+
+  - id: cam_02
+    url: rtsp://admin:password@192.168.1.101:554/stream1
+    queue_size: 10
+    reconnect_delay: 5.0
+
+  # Add more cameras as needed:
+  # - id: cam_03
+  #   url: rtsp://admin:password@192.168.1.102:554/stream1
+
+detector:
+  model: yolov8n.pt       # yolov8n / yolov8s / yolov8m / yolov8l / yolov8x
+  confidence: 0.5
+  iou: 0.45
+  device: cpu             # cpu | cuda | mps
+  tracking: true          # enable ByteTrack object tracking
+  classes:                # null = all classes; or list COCO class IDs e.g. [0, 2, 5]
+    # - 0   # person
+    # - 2   # car
+
+output:
+  frames_dir: output/frames
